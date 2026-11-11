@@ -1,0 +1,9 @@
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": {"driver": {"name": "CodeQL", "rules": [
+      {"id": "js/example-low", "properties": {"security-severity": "4.0"}}
+    ]}},
+    "results": [{"ruleId": "js/example-low", "message": {"text": "Fixture low"}}]
+  }]
+}

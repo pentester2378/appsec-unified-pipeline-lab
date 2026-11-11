@@ -1,0 +1,9 @@
+{
+  "version": "2.1.0",
+  "runs": [{
+    "tool": {"driver": {"name": "CodeQL", "rules": [
+      {"id": "js/sql-injection", "properties": {"security-severity": "8.8"}}
+    ]}},
+    "results": [{"ruleId": "js/sql-injection", "message": {"text": "SQL injection demo fixture"}}]
+  }]
+}

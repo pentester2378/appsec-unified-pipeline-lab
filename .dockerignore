@@ -1,0 +1,11 @@
+.git
+.github
+node_modules
+coverage
+reports
+__pycache__
+*.log
+scripts
+tests
+docs
+zap
