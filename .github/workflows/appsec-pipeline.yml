@@ -1,3 +1,4 @@
+
 name: AppSec Unified - SAST then Docker then DAST
 
 on:
@@ -19,27 +20,37 @@ jobs:
     name: 01 SAST - CodeQL and High gate
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+
     steps:
       - name: Checkout code being validated
         uses: actions/checkout@v4
+
       - name: Show exact commit
         run: git rev-parse HEAD
+
       - name: Run PoC policy and structure unit tests
         run: |
           python3 -m unittest discover -s tests -p 'test_*.py' -v
           npm test
+
       - name: Initialise CodeQL (advanced setup)
         uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
           build-mode: none
+
       - name: Analyze and publish to GitHub Code Scanning
         uses: github/codeql-action/analyze@v4
         with:
           output: codeql-results
           upload: always
+
       - name: Enforce same-run SAST policy
-        run: python3 scripts/sast_gate.py --sarif codeql-results --summary reports/sast-gate.json
+        run: |
+          python3 scripts/sast_gate.py \
+            --sarif codeql-results \
+            --summary reports/sast-gate.json
+
       - name: Preserve SAST evidence even on failure
         if: always()
         uses: actions/upload-artifact@v4
@@ -56,53 +67,90 @@ jobs:
     needs: [sast]
     runs-on: ubuntu-24.04
     timeout-minutes: 25
+
     permissions:
       contents: read
+
     steps:
       - name: Checkout the exact same GitHub event commit
         uses: actions/checkout@v4
+
       - name: Show exact commit
         run: git rev-parse HEAD
+
       - name: Build and start application and PostgreSQL
         run: |
-          docker compose -p appsec-poc -f compose.test.yml up -d --build --wait
-          docker compose -p appsec-poc -f compose.test.yml ps
+          docker compose -p appsec-poc \
+            -f compose.test.yml up -d --build --wait
+
+          docker compose -p appsec-poc \
+            -f compose.test.yml ps
+
       - name: Verify HTTP application and database before scan
         run: |
           ready=0
+
           for attempt in {1..25}; do
-            if docker run --rm --network appsec-unified-ci curlimages/curl:latest \
+            if docker run --rm \
+                --network appsec-unified-ci \
+                curlimages/curl:latest \
                 -fsS http://app:3000/health; then
               ready=1
               break
             fi
+
             sleep 2
           done
+
           if [[ "$ready" != "1" ]]; then
             echo "::error::Application never became ready"
             exit 1
           fi
-          docker run --rm --network appsec-unified-ci curlimages/curl:latest \
+
+          docker run --rm \
+            --network appsec-unified-ci \
+            curlimages/curl:latest \
             -fsS http://app:3000/search/fruit
+
       - name: Prepare directory writable by ZAP container
         run: |
           mkdir -p reports
           sudo chown 1000:1000 reports
+
       - name: Run REAL ZAP Baseline against built app
         run: |
-          docker run --rm --network appsec-unified-ci \
+          docker run --rm \
+            --network appsec-unified-ci \
             -v "$PWD/reports:/zap/wrk:rw" \
             ghcr.io/zaproxy/zaproxy:stable \
-            zap-baseline.py -t http://app:3000 -m 1 -I -T 5 \
-              -J zap.json -r zap.html
+            zap-baseline.py \
+              -t http://app:3000 \
+              -m 1 \
+              -I \
+              -T 5 \
+              -J zap.json \
+              -r zap.html
+
           test -s reports/zap.json
           test -s reports/zap.html
+
+      # FIX: ZAP writes as UID 1000, whereas the
+      # GitHub runner uses a different user.
+      # Restore ownership even if the ZAP step fails.
+      - name: Restore report ownership to GitHub runner
+        if: always()
+        run: |
+          if [[ -d reports ]]; then
+            sudo chown -R "$(id -u):$(id -g)" reports
+          fi
+
       - name: Enforce same-run DAST policy
         run: |
           python3 scripts/dast_gate.py \
             --report reports/zap.json \
             --expected-origin http://app:3000 \
             --summary reports/dast-gate.json
+
       - name: Upload DAST reports even on failure
         if: always()
         uses: actions/upload-artifact@v4
@@ -112,11 +160,16 @@ jobs:
             reports/
           if-no-files-found: warn
           retention-days: 7
+
       - name: Docker logs and shutdown
         if: always()
         run: |
-          docker compose -p appsec-poc -f compose.test.yml logs --tail=100 || true
-          docker compose -p appsec-poc -f compose.test.yml down --volumes --remove-orphans || true
+          docker compose -p appsec-poc \
+            -f compose.test.yml logs --tail=100 || true
+
+          docker compose -p appsec-poc \
+            -f compose.test.yml down \
+            --volumes --remove-orphans || true
 
   security-validation:
     name: 03 APPSEC UNIFIED GATE
@@ -124,6 +177,7 @@ jobs:
     if: always()
     runs-on: ubuntu-24.04
     timeout-minutes: 5
+
     steps:
       - name: Enforce all required jobs, including skipped / failed
         env:
@@ -132,8 +186,10 @@ jobs:
         run: |
           echo "SAST result: ${SAST_RESULT}"
           echo "DAST result: ${DAST_RESULT}"
+
           if [[ "$SAST_RESULT" != "success" || "$DAST_RESULT" != "success" ]]; then
             echo "::error::APPSEC UNIFIED GATE FAILED"
             exit 1
           fi
+
           echo "APPSEC UNIFIED GATE PASSED"
