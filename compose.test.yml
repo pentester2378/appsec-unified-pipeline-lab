@@ -22,7 +22,7 @@ services:
     environment:
       DATABASE_URL: postgres://appsec:appsec-demo-only@db:5432/appsec
       PORT: '3000'
-      ENABLE_CSP: 'false' # Change to 'false' ONLY for scenario B
+      ENABLE_CSP: 'true' # Change to 'false' ONLY for scenario B
     depends_on:
       db:
         condition: service_healthy
