@@ -36,10 +36,9 @@ app.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
 app.get('/search/:category', searchLimiter, async (req, res) => {
   try {
-    const result = await pool.query(
-      'SELECT item, price FROM product WHERE item_category = $1',
-      [req.params.category]
-    );
+    const sql = "SELECT item, price FROM product WHERE item_category = '" +
+      req.params.category + "'";
+    const result = await pool.query(sql);
     res.json(result.rows);
   } catch (error) {
     console.error('Product search failed', error.message);
