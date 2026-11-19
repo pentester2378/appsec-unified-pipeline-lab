@@ -1,0 +1,245 @@
+# SAST multi-strumento: un job per strumento e un gate aggregato.
+#
+# Estensione aggiuntiva: non sostituisce e non modifica appsec-pipeline.yml.
+# - Ogni job di strumento e' rosso solo se la scansione non si completa; il giudizio
+#   sui finding e' del job "SAST AGGREGATO", che legge tutti i report dello stesso run.
+# - Solo action di GitHub, fissate a un commit. Gli strumenti di terze parti girano
+#   come immagini Docker a versione fissata.
+#
+# Versioni fissate il 19 novembre 2026:
+#   actions/checkout v4.4.0, actions/upload-artifact v4.6.2,
+#   actions/download-artifact v4.3.0, github/codeql-action v4.39.3,
+#   Semgrep 1.186.0, Gitleaks v8.30.1, Trivy 0.76.2.
+
+name: SAST multi-strumento
+
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: sast-multi-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  codeql:
+    name: S1 SAST - CodeQL
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Initialise CodeQL
+        uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          languages: javascript-typescript
+          build-mode: none
+
+      # upload: never -> in Code Scanning resta la sola analisi di appsec-pipeline.yml.
+      - name: Analyze without publishing
+        uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          output: sarif/codeql
+          upload: never
+
+      - name: Keep CodeQL report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-multi-codeql
+          path: sarif/codeql/
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 7
+
+  semgrep:
+    name: S2 SAST - Semgrep
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      security-events: write
+    container:
+      image: semgrep/semgrep:1.186.0
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Run Semgrep
+        run: |
+          mkdir -p sarif/semgrep
+          semgrep scan --config p/default --metrics=off --exclude sarif \
+            --sarif --output sarif/semgrep/semgrep.sarif .
+          test -s sarif/semgrep/semgrep.sarif
+
+      - name: Publish Semgrep results to Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: sarif/semgrep/semgrep.sarif
+          category: semgrep
+
+      - name: Keep Semgrep report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-multi-semgrep
+          path: sarif/semgrep/
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 7
+
+  gitleaks:
+    name: S3 SECRETS - Gitleaks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout with full history
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          fetch-depth: 0
+
+      # --redact: il valore della credenziale non finisce nel report.
+      # --user: il container scrive il report con l'utente del runner.
+      - name: Run Gitleaks
+        run: |
+          mkdir -p sarif/gitleaks
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -v "$PWD:/repo" -w /repo \
+            ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git --redact --no-banner --exit-code 0 \
+            --report-format sarif \
+            --report-path /repo/sarif/gitleaks/gitleaks.sarif /repo
+          test -s sarif/gitleaks/gitleaks.sarif
+
+      - name: Publish Gitleaks results to Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: sarif/gitleaks/gitleaks.sarif
+          category: gitleaks
+
+      - name: Keep Gitleaks report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-multi-gitleaks
+          path: sarif/gitleaks/
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 7
+
+  trivy:
+    name: S4 SCA-IAC - Trivy
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: read
+      security-events: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - name: Run Trivy on dependencies and infrastructure files
+        run: |
+          mkdir -p sarif/trivy
+          docker run --rm --user "$(id -u):$(id -g)" -e HOME=/tmp \
+            -e TRIVY_CACHE_DIR=/tmp/trivy-cache \
+            -v "$PWD:/repo" \
+            aquasec/trivy:0.76.2 \
+            fs --scanners vuln,misconfig --skip-dirs sarif --exit-code 0 \
+            --format sarif --output /repo/sarif/trivy/trivy.sarif /repo
+          test -s sarif/trivy/trivy.sarif
+
+      - name: Publish Trivy results to Code Scanning
+        if: always()
+        continue-on-error: true
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: sarif/trivy/trivy.sarif
+          category: trivy
+
+      - name: Keep Trivy report
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-multi-trivy
+          path: sarif/trivy/
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 7
+
+  gate:
+    name: SAST AGGREGATO
+    needs: [codeql, semgrep, gitleaks, trivy]
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      # Un report mancante, o un job di strumento non riuscito (report forse parziale),
+      # rende il gate INVALID: mai PASS su dati mancanti o incompleti.
+      - name: Collect the reports of this run
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          pattern: sast-multi-*
+          path: sarif
+
+      - name: Enforce aggregated SAST policy
+        env:
+          CODEQL_RESULT: ${{ needs.codeql.result }}
+          SEMGREP_RESULT: ${{ needs.semgrep.result }}
+          GITLEAKS_RESULT: ${{ needs.gitleaks.result }}
+          TRIVY_RESULT: ${{ needs.trivy.result }}
+        run: |
+          python3 scripts/sast_multi_gate.py \
+            --sarif-dir sarif \
+            --expect codeql,semgrep,gitleaks,trivy \
+            --job-result "codeql=$CODEQL_RESULT" \
+            --job-result "semgrep=$SEMGREP_RESULT" \
+            --job-result "gitleaks=$GITLEAKS_RESULT" \
+            --job-result "trivy=$TRIVY_RESULT" \
+            --summary reports/sast-multi-gate.json \
+            --markdown reports/sast-multi-gate.md
+
+      - name: Publish the summary on the run page
+        if: always()
+        run: |
+          if [[ -f reports/sast-multi-gate.md ]]; then
+            cat reports/sast-multi-gate.md >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "SAST aggregato: riepilogo non prodotto (gate INVALID)." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Keep aggregated evidence even on failure
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: sast-aggregato-evidence
+          path: |
+            sarif/
+            reports/
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 7
