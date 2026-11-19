@@ -1,0 +1,337 @@
+{
+ "version": "2.1.0",
+ "runs": [
+  {
+   "tool": {
+    "driver": {
+     "name": "Semgrep OSS",
+     "semanticVersion": "1.186.0",
+     "rules": [
+      {
+       "defaultConfiguration": {
+        "level": "note"
+       },
+       "id": "dockerfile.audit.dockerfile-source-not-pinned",
+       "name": "dockerfile.audit.dockerfile-source-not-pinned",
+       "properties": {
+        "precision": "very-high",
+        "tags": []
+       },
+       "shortDescription": {
+        "text": "Semgrep Finding: dockerfile.audit.dockerfile-source-not-pinned"
+       }
+      },
+      {
+       "defaultConfiguration": {
+        "level": "note"
+       },
+       "id": "javascript.express.security.audit.express-check-csurf-middleware-usage",
+       "name": "javascript.express.security.audit.express-check-csurf-middleware-usage",
+       "properties": {
+        "precision": "very-high",
+        "tags": [
+         "CWE-352: Cross-Site Request Forgery (CSRF)",
+         "LOW CONFIDENCE",
+         "OWASP-A01:2021 - Broken Access Control",
+         "OWASP-A01:2025 - Broken Access Control",
+         "security"
+        ]
+       },
+       "shortDescription": {
+        "text": "Semgrep Finding: javascript.express.security.audit.express-check-csurf-middleware-usage"
+       }
+      },
+      {
+       "defaultConfiguration": {
+        "level": "error"
+       },
+       "id": "javascript.express.security.injection.tainted-sql-string",
+       "name": "javascript.express.security.injection.tainted-sql-string",
+       "properties": {
+        "precision": "very-high",
+        "tags": [
+         "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+         "LOW CONFIDENCE",
+         "OWASP-A01:2017 - Injection",
+         "OWASP-A03:2021 - Injection",
+         "OWASP-A05:2025 - Injection",
+         "security"
+        ]
+       },
+       "shortDescription": {
+        "text": "Semgrep Finding: javascript.express.security.injection.tainted-sql-string"
+       }
+      },
+      {
+       "defaultConfiguration": {
+        "level": "note"
+       },
+       "id": "javascript.lang.correctness.useless-assignment",
+       "name": "javascript.lang.correctness.useless-assignment",
+       "properties": {
+        "precision": "very-high",
+        "tags": []
+       },
+       "shortDescription": {
+        "text": "Semgrep Finding: javascript.lang.correctness.useless-assignment"
+       }
+      },
+      {
+       "defaultConfiguration": {
+        "level": "warning"
+       },
+       "id": "yaml.github-actions.security.github-actions-mutable-action-tag",
+       "name": "yaml.github-actions.security.github-actions-mutable-action-tag",
+       "properties": {
+        "precision": "very-high",
+        "tags": [
+         "CWE-1357: Reliance on Insufficiently Trustworthy Component",
+         "CWE-353: Missing Support for Integrity Check",
+         "HIGH CONFIDENCE",
+         "OWASP-A08:2021 - Software and Data Integrity Failures",
+         "OWASP-A08:2025 - Software and Data Integrity Failures",
+         "security"
+        ]
+       },
+       "shortDescription": {
+        "text": "Semgrep Finding: yaml.github-actions.security.github-actions-mutable-action-tag"
+       }
+      }
+     ]
+    }
+   },
+   "results": [
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 34,
+         "endLine": 26,
+         "startColumn": 9,
+         "startLine": 26
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 43,
+         "endLine": 37,
+         "startColumn": 9,
+         "startLine": 37
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 46,
+         "endLine": 43,
+         "startColumn": 9,
+         "startLine": 43
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 41,
+         "endLine": 56,
+         "startColumn": 9,
+         "startLine": 56
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 34,
+         "endLine": 76,
+         "startColumn": 9,
+         "startLine": 76
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "yaml.github-actions.security.github-actions-mutable-action-tag",
+     "message": {
+      "text": "GitHub Actions step uses a mutable tag or branch reference. Tags and branch names can be silently repointed by the action owner, enabling supply-chain attacks — as seen in the trivy-action and kics-gi"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": ".github/workflows/appsec-pipeline.yml",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 41,
+         "endLine": 156,
+         "startColumn": 9,
+         "startLine": 156
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "dockerfile.audit.dockerfile-source-not-pinned",
+     "message": {
+      "text": "To ensure reproducible builds, pin Dockerfile `FROM` commands to a specific hash. You can find the hash by running `docker pull node` and then  specify it with `node:22-alpine@sha256:<hash goes here>`"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "Dockerfile",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 20,
+         "endLine": 1,
+         "startColumn": 1,
+         "startLine": 1
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "javascript.lang.correctness.useless-assignment",
+     "message": {
+      "text": "`const` is assigned twice; the first assignment is useless"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "src/app.js",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 52,
+         "endLine": 5,
+         "startColumn": 1,
+         "startLine": 4
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "javascript.express.security.audit.express-check-csurf-middleware-usage",
+     "message": {
+      "text": "A CSRF middleware was not detected in your express application. Ensure you are either using one such as `csurf` or `csrf` (see rule references) and/or you are properly doing CSRF validation in your ro"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "src/app.js",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 22,
+         "endLine": 7,
+         "startColumn": 7,
+         "startLine": 7
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "javascript.express.security.injection.tainted-sql-string",
+     "message": {
+      "text": "Detected user input used to manually construct a SQL string. This is usually bad practice because manual construction could accidentally result in a SQL injection. An attacker could use a SQL injectio"
+     },
+     "properties": {},
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "src/app.js",
+         "uriBaseId": "%SRCROOT%"
+        },
+        "region": {
+         "endColumn": 26,
+         "endLine": 40,
+         "startColumn": 7,
+         "startLine": 40
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

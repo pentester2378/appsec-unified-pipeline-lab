@@ -1,0 +1,29 @@
+{
+ "version": "2.1.0",
+ "runs": [
+  {
+   "tool": {
+    "driver": {
+     "name": "gitleaks",
+     "semanticVersion": "v8.30.1",
+     "informationUri": "https://github.com/gitleaks/gitleaks",
+     "rules": [
+      {
+       "id": "generic-api-key",
+       "shortDescription": {
+        "text": "Detected a Generic API Key"
+       }
+      },
+      {
+       "id": "private-key",
+       "shortDescription": {
+        "text": "Identified a Private Key"
+       }
+      }
+     ]
+    }
+   },
+   "results": []
+  }
+ ]
+}
