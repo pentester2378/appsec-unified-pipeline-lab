@@ -1,0 +1,124 @@
+{
+ "version": "2.1.0",
+ "runs": [
+  {
+   "tool": {
+    "driver": {
+     "name": "Trivy",
+     "fullName": "Trivy Vulnerability Scanner",
+     "version": "0.76.2",
+     "informationUri": "https://github.com/aquasecurity/trivy",
+     "rules": [
+      {
+       "id": "DS002",
+       "name": "Misconfiguration",
+       "shortDescription": {
+        "text": "Image user should not be 'root'"
+       },
+       "defaultConfiguration": {
+        "level": "error"
+       },
+       "properties": {
+        "precision": "very-high",
+        "security-severity": "8.0",
+        "tags": [
+         "misconfiguration",
+         "security",
+         "HIGH"
+        ]
+       }
+      },
+      {
+       "id": "DS026",
+       "name": "Misconfiguration",
+       "shortDescription": {
+        "text": "No HEALTHCHECK defined"
+       },
+       "defaultConfiguration": {
+        "level": "note"
+       },
+       "properties": {
+        "precision": "very-high",
+        "security-severity": "2.0",
+        "tags": [
+         "misconfiguration",
+         "security",
+         "LOW"
+        ]
+       }
+      },
+      {
+       "id": "CVE-2099-0001",
+       "name": "LanguageSpecificPackageVulnerability",
+       "shortDescription": {
+        "text": "example-lib: esempio di vulnerabilita' media"
+       },
+       "defaultConfiguration": {
+        "level": "warning"
+       },
+       "properties": {
+        "precision": "very-high",
+        "security-severity": "5.3",
+        "tags": [
+         "vulnerability",
+         "security",
+         "MEDIUM"
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "results": [
+    {
+     "ruleId": "DS026",
+     "ruleIndex": 1,
+     "level": "note",
+     "message": {
+      "text": "Artifact: Dockerfile"
+     },
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "Dockerfile",
+         "uriBaseId": "ROOTPATH"
+        },
+        "region": {
+         "startLine": 1,
+         "startColumn": 1,
+         "endLine": 1,
+         "endColumn": 1
+        }
+       }
+      }
+     ]
+    },
+    {
+     "ruleId": "CVE-2099-0001",
+     "ruleIndex": 2,
+     "level": "warning",
+     "message": {
+      "text": "Artifact: package-lock.json"
+     },
+     "locations": [
+      {
+       "physicalLocation": {
+        "artifactLocation": {
+         "uri": "package-lock.json",
+         "uriBaseId": "ROOTPATH"
+        },
+        "region": {
+         "startLine": 120,
+         "startColumn": 1,
+         "endLine": 120,
+         "endColumn": 1
+        }
+       }
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}
