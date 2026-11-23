@@ -185,3 +185,4 @@ Non si espongono porte host: app, database e ZAP restano su una rete Docker dedi
 - ZAP Baseline: https://www.zaproxy.org/docs/docker/baseline-scan/
 - ZAP CSP missing rule 10038-1: https://www.zaproxy.org/docs/alerts/10038-1/
 # appsec-unified-pipeline-lab
+
